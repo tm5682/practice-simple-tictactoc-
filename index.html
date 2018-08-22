@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            .board {
+                margin: 0 auto;
+                padding: 50px;
+                border: 1px solid black;
+                max-width: 900px;
+                min-height: 650px;
+                display: flex;
+                flex-wrap: wrap;
+            }
+             .square{
+                 margin: 0 auto;
+                 min-height: 50px;
+                 border: 3px solid yellow;
+                 flex: 1 0 25%;
+                 background-color: white;
+                 color: blue;
+                 font-size: 20px;
+                 text-align: center;
+            }
+            .info-panel {
+                margin-top: 20px;
+                margin-left: 200px;
+                margin-right: 200px;
+                min-width: 400px;
+                min-height: 100px;
+                border: 1px solid green;
+                text-align: center;
+                font-size: 22px;
+                color: burlywood;
+            }
+        </style>
+    </head>
+    <body onload="activePlayers()">
+        <div class="board">
+            <div class="square sq-1"></div>
+            <div class="square sq-2"></div>
+            <div class="square sq-3"></div>
+            <div class="square sq-4"></div>
+            <div class="square sq-5"></div>
+            <div class="square sq-6"></div>
+            <div class="square sq-7"></div>
+            <div class="square sq-8"></div>
+            <div class="square sq-9"></div>
+        </div>
+        <div class="info-panel"></div>
+        <script type="text/javascript">
+            ////////////////////////        GLOBALS      \\\\\\\\\\\\\\\\\\\\\\\\\\\\    
+            var board = document.querySelector('.board');
+            var squares = document.querySelectorAll('.square');
+            var inputmap = [
+                [0, 0, 0],
+                [0, 0, 0],
+                [0, 0, 0] // -1 for plr 1; +1 for plr 2
+            ];
+            var players = [
+                {
+                    active: false,
+                    symbol: -1,
+                    name: "Player 1"
+                },
+                {
+                    active: false,
+                    symbol: 1,
+                    name: "Player 2"
+                }
+            ];
+            var panelObj = {
+                current: '',
+                symbol: '',
+                msg: ''
+            };
+            var iteration = 0;
+            var maxmoves = 9;
+            ////////////////////////        CONTROLS      \\\\\\\\\\\\\\\\\\\\\\\\\\\\
+            var updatePlayer = () => {
+                var upd = players.find(p => !p.active);
+                players.find(p => p.active).active = false;
+                upd.active = true;
+            };
+            var togglePanel = (panel, altstr='') => {
+                if(altstr !== '') {
+                    panel.innerHTML = altstr;
+                    return;
+                }
+                if(!!! players.find(p => p.name === panelObj.current)) {
+                    // then first move so, don't update panel
+                    return ;
+                }
+                var oldcurrent = panelObj.current;
+                panelObj.current = panelObj.current === "Player 1" ? "Player 2" : "Player 1";
+                panelObj.symbol = panelObj.symbol === '-1' ? '1' : '-1';
+                panelObj.msg = oldcurrent === "Player 1" ? "Make a move Player 2" : "Make a move Player 1";
+                var str = `Active Player: ${panelObj.current}  Player Symbol: ${panelObj.symbol}
+                <br>${panelObj.msg}
+                `;
+                panel.innerHTML = str;
+               // updatePlayer();
+            };
+            var checkForWin = (cidx) => {
+                var activePlayer = players.find(p => p.active);
+                var sym =  activePlayer.symbol;
+                var cellchk = (cv, dv) => cv === dv;
+                console.log("Box clicked: " + cidx);
+                if(cidx === 0) {
+                    return ( (cellchk(inputmap[0][0], sym) && cellchk(inputmap[0][1], sym) && cellchk(inputmap[0][2], sym)) 
+                      || ( cellchk(inputmap[0][0], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[2][2], sym))
+                      || ( cellchk(inputmap[0][0], sym) && cellchk(inputmap[1][0], sym) && cellchk(inputmap[2][0], sym) )
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 1) {
+                    return ( (cellchk(inputmap[0][1], sym) && cellchk(inputmap[0][0], sym) && cellchk(inputmap[0][2], sym)) 
+                      || ( cellchk(inputmap[0][1], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[2][1], sym))
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 2) {
+                    return ( (cellchk(inputmap[0][2], sym) && cellchk(inputmap[1][2], sym) && cellchk(inputmap[2][2], sym)) 
+                      || ( cellchk(inputmap[0][2], sym) && cellchk(inputmap[0][0], sym) && cellchk(inputmap[0][1], sym))
+                      || ( cellchk(inputmap[0][2], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[2][0], sym) )
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 3) {
+                    return ( (cellchk(inputmap[1][0], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[1][2], sym)) 
+                      || ( cellchk(inputmap[1][0], sym) && cellchk(inputmap[0][0], sym) && cellchk(inputmap[2][0], sym))
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 4) {
+                    return ( (cellchk(inputmap[1][1], sym) && cellchk(inputmap[1][0], sym) && cellchk(inputmap[1][2], sym)) 
+                      || ( cellchk(inputmap[1][1], sym) && cellchk(inputmap[0][1], sym) && cellchk(inputmap[2][1], sym))
+                      || ( cellchk(inputmap[1][1], sym) && cellchk(inputmap[0][0], sym) && cellchk(inputmap[2][2], sym) )
+                      || ( cellchk(inputmap[1][1], sym) && cellchk(inputmap[0][2], sym) && cellchk(inputmap[2][0], sym) )
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 5) {
+                    return ( (cellchk(inputmap[1][2], sym) && cellchk(inputmap[0][2], sym) && cellchk(inputmap[2][0], sym)) 
+                      || ( cellchk(inputmap[1][2], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[1][0], sym))
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 6) {
+                    return ( (cellchk(inputmap[2][0], sym) && cellchk(inputmap[2][1], sym) && cellchk(inputmap[2][2], sym)) 
+                      || ( cellchk(inputmap[2][0], sym) && cellchk(inputmap[0][0], sym) && cellchk(inputmap[1][0], sym))
+                      || ( cellchk(inputmap[2][0], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[0][2], sym))
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 7) {
+                    return ( (cellchk(inputmap[2][1], sym) && cellchk(inputmap[2][0], sym) && cellchk(inputmap[2][2], sym)) 
+                      || ( cellchk(inputmap[2][1], sym) && cellchk(inputmap[0][1], sym) && cellchk(inputmap[1][1], sym))
+                    ) ? activePlayer.name : '';
+                }
+                else if(cidx === 8) {
+                    return ( (cellchk(inputmap[2][2], sym) && cellchk(inputmap[2][0], sym) && cellchk(inputmap[2][1], sym)) 
+                      || ( cellchk(inputmap[2][2], sym) && cellchk(inputmap[1][2], sym) && cellchk(inputmap[0][2], sym))
+                      || ( cellchk(inputmap[2][2], sym) && cellchk(inputmap[1][1], sym) && cellchk(inputmap[0][0], sym) )
+                    ) ? activePlayer.name : '';
+                }
+            };
+            var isAlreadySelected = (idx, sym) => {
+                var cell = inputmap[Math.floor(idx/3)][idx%3];
+                return (cell == sym) ? true : false;
+            };
+            var changeSelected = (idx) => {
+                var adjusted = idx - 1; // left shift by one
+                var r = Math.floor(adjusted / 3);
+                var c = adjusted % 3;
+                var sym = panelObj.symbol;
+                inputmap[r][c] = Number.parseInt(sym, 10);
+                //updatePlayer();
+                var possibleWinner = checkForWin(adjusted);
+                var hasWon = possibleWinner === '' ? false : true;
+                !hasWon ? !!!togglePanel(document.querySelector('.info-panel')) && updatePlayer(): alert("WON by: " + possibleWinner);
+            };
+            for(let i=0; i<squares.length; ++i) {
+                squares[i].addEventListener('click', (e) => {
+                    if(iteration >= maxmoves) return false;
+                    var clicked = e.target;
+                    var clslist = clicked.classList;
+                    var sqnum = clslist[clslist.length-1].toString().split('-').pop();
+                    // controls
+                    var plr = players.find(p => p.active);
+                    var idx = Number.parseInt(sqnum, 10);
+                    if(isAlreadySelected(idx-1, plr.symbol)) {
+                        // show error in panel
+                        var str = `${panelObj.current} that box is already selected!`
+                        togglePanel(document.querySelector('.info-panel'), str);
+                    }
+                    else changeSelected(idx);
+                    console.log('Move: ' + (++iteration))
+                    console.log(inputmap);
+                    clicked.innerHTML = plr.symbol;
+                });
+            }
+            var activePlayers = () => { 
+                var plr1 = players.find(p => p.name === "Player 1");
+                plr1.active = true;
+                var panel = document.querySelector('.info-panel');
+                panelObj.current = plr1.name;
+                panelObj.symbol = plr1.symbol.toString();
+                panelObj.msg = 'Choose a box to begin';
+                var str = `Active Player: ${panelObj.current}  Player Symbol: ${panelObj.symbol}
+                <br>${panelObj.msg}
+                `;
+                panel.innerHTML = str;
+            };
+            ///////////////////////     LEARNING        \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+            
+        </script>
+    </body>
+</html>
